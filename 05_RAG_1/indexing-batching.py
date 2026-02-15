@@ -53,7 +53,7 @@ for i in range(0, len(split_docs), batch_size):
     try:
         vector_store = QdrantVectorStore.from_documents(
         documents=split_docs,
-        url="http://localhost:6333",
+        url="http://vector-db:6333",
         collection_name="learning_rag",
         embedding=embedding_model
         )

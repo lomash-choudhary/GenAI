@@ -1,0 +1,50 @@
+{
+    "name": "Learning GenAI",
+    "dockerComposeFile":"docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "remoteUser": "root",
+
+    "customizations": {
+    "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.black-formatter",
+                "eamodio.gitlens",
+                "njpwerner.autodocstring",
+                "KevinRose.vsc-python-indent",
+                "esbenp.prettier-vscode",
+                "usernamehw.errorlens",
+                "tamasfe.even-better-toml",
+                "aaron-bond.better-comments",
+                "ms-azuretools.vscode-docker",
+                "ms-python.flake8",
+                "ms-python.isort"
+            ]
+        },
+        "settings": {
+        "python.pythonPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.autoComplete.addBrackets": true,
+
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true
+        }
+    }
+}
+
+/*
+    In this json file we will give the configuration of the dev container
+
+    first we will give the name
+    then we will give the name of the docker compose file path which we want to run inside this dev container
+    then we give it a service
+    then we give it a path where we want to mount the code
+    then we can give it the remote user's name
+
+    what will happen now is that
+    we are mounting our VS Code or IDE in docker
+    that vs code will be different from our current vs code
+    so we can give it our extensions as well which we want in that vs code
+*/

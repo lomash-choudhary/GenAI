@@ -1,5 +1,4 @@
-import json
-from unittest import result
+# flake8: noqa
 from dotenv import load_dotenv
 import os
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -14,18 +13,19 @@ client = OpenAI(
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 
-#Vector Embeddings
-embedding_model = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", google_api_key=os.getenv("GEMINI_API_KEY"))
+# Vector Embeddings
+embedding_model = GoogleGenerativeAIEmbeddings(
+    model="models/gemini-embedding-001", google_api_key=os.getenv("GEMINI_API_KEY"))
 
-#Vector Db
+# Vector Db
 # This our vector db collection.
 vector_db = QdrantVectorStore.from_existing_collection(
-    url="http://localhost:6333",
+    url="http://vector-db:6333",
     collection_name="learning_rag",
     embedding=embedding_model
 )
 
-SYSTEM_PROMPT=f"""
+SYSTEM_PROMPT = f"""
 # Adaptive Human-Like Data Structures Advisor Prompt
 
 You are an intelligent, friendly mentor who advises users on which data structures to learn. Your answers must be:
@@ -79,58 +79,35 @@ Guidelines for You (AI):
 
 """
 
-message_arr_for_ai = [{'role':'system', 'content':SYSTEM_PROMPT}]
-
+message_arr_for_ai = [{'role': 'system', 'content': SYSTEM_PROMPT}]
 print("💬 Chat started! Type 'exit' to quit.\n")
 
-while true:
 
-    #take user query first
+def process_query(query: str):
 
-    user_query = input("👨 ")
-
-    if user_query.lower() in ['exit', 'quit']:
+    if query.lower() in ['exit', 'quit']:
         print("GoodBye 👋")
-        break
-    # Vector similarity search [query] in DB
-    # this will automatically convert the user query into vector embeddings and search it in the vector db.
+        return
 
-    rch_result = vector_db.similarity_search(
-        querseay=user_query
-    )
+    print("Searching chunks", query)
+    search_result = vector_db.similarity_search(query=query)
 
-    context = "\n\n\n".join([f"Page Content : {result.page_content}\n Page Number : {result.metadata['page_label']}\n File Location on the system: {result.metadata['source']}" for result in search_result])
-    
-    message_arr_for_ai.append({'role':'system', 'content':f"Content : {context}"})
+    context = "\n\n\n".join(
+        [f"Page Content : {result.page_content}\n Page Number : {result.metadata['page_label']}\n File Location on the system: {result.metadata['source']}" for result in search_result])
 
-    message_arr_for_ai.append({'role':'user', 'content':user_query})
+    message_arr_for_ai.append(
+        {'role': 'system', 'content': f"Content : {context}"})
+
+    message_arr_for_ai.append({'role': 'user', 'content': query})
 
     result = client.chat.completions.create(
         model="gemini-2.5-flash",
-        response_format={"type":"json_object"},
+        response_format={"type": "json_object"},
         messages=message_arr_for_ai,
     )
 
     response_from_ai = result.choices[0].message.content
 
-    try:
-        parsed_response = json.loads(response_from_ai)
-        print(parsed_response)
+    print(f"for this user query {query} we got this response {response_from_ai} \n\n\n")
 
-        # if answer key is present then it will return the answer key value, but if it is missing then it will return the whole object or default value of response_from_ai
-        if parsed_response and isinstance(parsed_response, dict):
-            first_key = next(iter(parsed_response))
-            final_answer = parsed_response[first_key]
-            print(f"🤖 {final_answer}\n")
-    except json.JSONDecodeError:
-        print(f"🤖 {final_answer}\n")
-
-    message_arr_for_ai.append({'role':'assistant', 'content':response_from_ai})
-
-    # cleaning the old pdf data from the system prompt
-    message_arr_for_ai = [
-        msg for msg in message_arr_for_ai
-        if msg['role'] != 'system' or "Content :" not in msg['content']
-    ]
-
-
+    return response_from_ai
