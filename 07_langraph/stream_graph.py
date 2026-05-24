@@ -209,8 +209,12 @@ def main():
         "is_coding_question": False
     }
 
-    graph_result = graph.invoke(_state)
+    # graph_result = graph.invoke(_state)
 
-    print("graph_result\n\n\n", graph_result)
+
+    # print("graph_result\n\n\n", graph_result)
+
+    for event in graph.stream(_state):
+        print("Event", event)
 
 main()
